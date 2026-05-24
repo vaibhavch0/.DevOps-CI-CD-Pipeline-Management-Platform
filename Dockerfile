@@ -27,8 +27,11 @@ USER appuser
 # Copy JAR from build stage
 COPY --from=builder /app/target/*.jar app.jar
 
-# JVM tuning for containers (Render free tier has 512MB RAM)
+# JVM tuning for containers
 ENV JAVA_OPTS="-Xms128m -Xmx384m -XX:+UseG1GC -XX:+UseContainerSupport -XX:MaxRAMPercentage=75"
+
+# Activate production profile for Railway deployment
+ENV SPRING_PROFILES_ACTIVE=prod
 
 EXPOSE 8080
 
