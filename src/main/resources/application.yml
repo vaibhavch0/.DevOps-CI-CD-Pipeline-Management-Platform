@@ -1,0 +1,78 @@
+spring:
+  application:
+    name: AutoRABIT Pipeline Monitor
+
+  profiles:
+    active: dev
+
+  # JPA / Hibernate
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.H2Dialect
+
+  # Jackson
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    time-zone: UTC
+
+# ============================
+# Server
+# ============================
+server:
+  port: 8080
+  servlet:
+    context-path: /
+
+# ============================
+# JWT
+# ============================
+app:
+  jwt:
+    secret: "AutoRABITPipelineMonitorSuperSecretKey2024XYZABCDEFGHIJKLMNOPQRSTUVWXYZabcdef"
+    expiration-ms: 86400000   # 24 hours
+
+  cors:
+    allowed-origins: "http://localhost:3000,http://localhost:5173,http://localhost:8081"
+
+  pipeline:
+    execution:
+      step-delay-ms: 1500     # Simulate step processing time
+      log-interval-ms: 500    # Log emit interval per step
+
+# ============================
+# Actuator
+# ============================
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+  info:
+    env:
+      enabled: true
+
+info:
+  app:
+    name: AutoRABIT Pipeline Monitor
+    version: 1.0.0
+    description: Real-time CI/CD Pipeline Monitoring System
+
+# ============================
+# Logging
+# ============================
+logging:
+  level:
+    com.autorabit: DEBUG
+    org.springframework.web.socket: INFO
+    org.springframework.messaging: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
