@@ -4,11 +4,11 @@ spring:
       on-profile: prod
 
   datasource:
-    # Railway PostgreSQL plugin sets DATABASE_URL automatically
-    # We also support SPRING_DATASOURCE_URL as fallback
-    url: ${DATABASE_URL:${SPRING_DATASOURCE_URL:jdbc:h2:mem:testdb}}
-    username: ${PGUSER:${SPRING_DATASOURCE_USERNAME:sa}}
-    password: ${PGPASSWORD:${SPRING_DATASOURCE_PASSWORD:}}
+    # Railway PostgreSQL provides individual PG* vars — use them to build JDBC URL
+    # Do NOT use DATABASE_URL directly — Railway gives postgresql:// not jdbc:postgresql://
+    url: jdbc:postgresql://${PGHOST}:${PGPORT:5432}/${PGDATABASE}
+    username: ${PGUSER}
+    password: ${PGPASSWORD}
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 5
@@ -16,6 +16,9 @@ spring:
       connection-timeout: 30000
       idle-timeout: 600000
       max-lifetime: 1800000
+      # Required for Railway PostgreSQL SSL
+      data-source-properties:
+        sslmode: require
 
   jpa:
     hibernate:
@@ -25,7 +28,7 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
     show-sql: false
 
-  # Disable Redis on free tier (no Redis add-on)
+  # Disable Redis — not available on free tier
   autoconfigure:
     exclude:
       - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
@@ -35,11 +38,11 @@ spring:
     type: simple
 
 jwt:
-  secret: ${JWT_SECRET:please-set-a-strong-secret-in-railway-env-vars}
+  secret: ${JWT_SECRET:fallback-secret-change-in-railway-vars}
   expiration-ms: ${JWT_EXPIRATION_MS:86400000}
 
 server:
-  port: ${PORT:8080}    # Railway injects PORT automatically
+  port: ${PORT:8080}   # Railway injects PORT automatically
 
 management:
   endpoints:
@@ -49,8 +52,11 @@ management:
   endpoint:
     health:
       show-details: always
+      probes:
+        enabled: true
 
 logging:
   level:
     com.autorabit: INFO
     org.springframework.security: WARN
+    com.zaxxer.hikari: WARN
